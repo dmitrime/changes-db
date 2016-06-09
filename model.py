@@ -3,13 +3,11 @@ import json
 
 
 class ChangesObj:
-    def getIdentifierFunc():
-        return (self.objType, self.objId)
 
     def __init__(self, row):
         self.objTime = row.index
         self.objType = row['type']
-        self.objId   = row['id']
+        self.objId = row['id']
         self.objProps = self.loadProps(row['changes'])
 
     def loadProps(self, props):
@@ -22,23 +20,25 @@ class ChangesObj:
         self.objTime = time
         self.objProps.update(self.loadProps(changes))
 
+
 class ChangesDB:
     Columns = ['id', 'type', 'time', 'changes']
     Sep = '|'
-    
+
     def __init__(self, filename):
         self.data = self.load(filename)
 
     def load(self, filename):
         try:
-            data = pd.read_csv(filename,
-                    sep=ChangesDB.Sep,
-                    names=ChangesDB.Columns,
-                    converters={'time': lambda t: pd.to_datetime(int(t.strip()), unit='s'),
-                                'id': lambda t: int(t.strip()),
-                                'type': lambda t: t.strip(),
-                                'changes': lambda t: t.strip()},
-                    header=0)
+            data = pd.read_csv(
+                filename,
+                sep=ChangesDB.Sep,
+                names=ChangesDB.Columns,
+                converters={'time': lambda t: pd.to_datetime(int(t.strip()), unit='s'),
+                            'id': lambda t: int(t.strip()),
+                            'type': lambda t: t.strip(),
+                            'changes': lambda t: t.strip()},
+                header=0)
         except pd.parser.CParserError:
             raise Exception('Failed to load CSV file, check if CSV file is valid!')
         except ValueError:
@@ -46,7 +46,6 @@ class ChangesDB:
 
         if len(data.keys()) != len(ChangesDB.Columns):
             raise Exception('Unexpected number of dimentions!')
-
 
         # sort changes by timestamp
         data.sort(['time'], inplace=True)
@@ -69,15 +68,35 @@ class ChangesDB:
         return data
 
     def query(self, objType, objId, objTime):
-        until = pd.to_datetime(objTime, unit='s')
+        if objTime is None or objType is None:
+            return None
 
-        res = self.data[
-                (self.data['id'] == objId) & 
-                (self.data['type'] == objType)
-            ][:until]
-        print len(res)
-        print res.tail(1)
+        until = pd.to_datetime(objTime, unit='s')
+        # set the conditions
+        condition = self.data.type == objType
+        if objId is not None:
+            condition = condition & (self.data.id == objId)
+
+        # make the query
+        items = self.data[condition][:until]
+        if len(items) == 0:
+            return None
+        # get the latest state
+        if objId is not None:
+            items = items.tail(1)
+            res = {objId: items['changes'].iloc[0]}
+        else:
+            # get the latest state for all unique ids
+            res = dict()
+            for idx, row in items.iloc[::-1].iterrows():
+                if row['id'] not in res:
+                    res[row['id']] = row['changes']
+        return res
+
+    def keys(self):
+        return self.data.type.unique()
 
 if __name__ == '__main__':
-    ChangesDB('sample.csv').query('ObjectA', 1, 467765765)
-
+    c = ChangesDB('sample.csv')
+    #print c.query('ObjectA', 1, 467765765)
+    print c.keys()
