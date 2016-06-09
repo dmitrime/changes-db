@@ -7,14 +7,14 @@ class ChangesObj:
         return (self.objType, self.objId)
 
     def __init__(self, row):
+        self.objTime = row.index
         self.objType = row['type']
         self.objId   = row['id']
-        self.objTime = row['time']
         self.objProps = self.loadProps(row['changes'])
 
     def loadProps(self, props):
         try:
-            return json.loads(props.strip())
+            return json.loads(props)
         except:
             raise Exception("Failed to load object properties")
 
@@ -34,6 +34,10 @@ class ChangesDB:
             data = pd.read_csv(filename,
                     sep=ChangesDB.Sep,
                     names=ChangesDB.Columns,
+                    converters={'time': lambda t: pd.to_datetime(int(t.strip()), unit='s'),
+                                'id': lambda t: int(t.strip()),
+                                'type': lambda t: t.strip(),
+                                'changes': lambda t: t.strip()},
                     header=0)
         except pd.parser.CParserError:
             raise Exception('Failed to load CSV file, check if CSV file is valid!')
@@ -44,17 +48,19 @@ class ChangesDB:
             raise Exception('Unexpected number of dimentions!')
 
 
-        # convert timestamp to datetime
-        data['time'] = pd.to_datetime(data['time'], unit='s')
         # sort changes by timestamp
         data.sort(['time'], inplace=True)
+
+        # make the time the new index
+        data.index = data['time']
+        del data['time']
 
         # map of unique object ids to objects
         objects = dict()
         for idx, row in data.iterrows():
             key = row['type'], row['id']
             if key in objects:
-                objects[key].update(row['time'], row['changes'])
+                objects[key].update(idx, row['changes'])
             else:
                 objects[key] = ChangesObj(row)
             # update the cell of the dataframe with the changes
@@ -62,6 +68,16 @@ class ChangesDB:
 
         return data
 
+    def query(self, objType, objId, objTime):
+        until = pd.to_datetime(objTime, unit='s')
+
+        res = self.data[
+                (self.data['id'] == objId) & 
+                (self.data['type'] == objType)
+            ][:until]
+        print len(res)
+        print res.tail(1)
+
 if __name__ == '__main__':
-    ChangesDB('sample.csv')
+    ChangesDB('sample.csv').query('ObjectA', 1, 467765765)
 
