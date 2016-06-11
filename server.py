@@ -19,7 +19,7 @@ def keys():
     if db is not None:
         return jsonify({'result': db.keys().tolist()})
     else:
-        return jsonify({'result': 'error', 'msg': 'CSV file not loaded'})
+        return jsonify({'result': 'Error', 'msg': 'CSV file not loaded'})
 
 @app.route('/query')
 def query():
@@ -28,11 +28,11 @@ def query():
         objId = request.values.get('objId')
         objTime = request.values.get('objTime')
         if objType is None or objTime is None:
-            return jsonify({'result': 'error', 'msg': 'Object type and object time required'})
+            return jsonify({'result': 'Error', 'msg': 'Object type and object time required'})
         else:
             return jsonify({'result': db.query(objType, objId, objTime)})
     else:
-        return jsonify({'result': 'error', 'msg': 'CSV file not loaded'})
+        return jsonify({'result': 'Error', 'msg': 'CSV file not loaded'})
 
 @app.route('/')
 def landing():
