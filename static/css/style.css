@@ -54,3 +54,28 @@ dd {
     color: #666;
     letter-spacing: -0.02em;
 }
+
+.upload-container {
+    padding: 40px;
+}
+
+.error-msg {
+    color: red;
+}
+
+.ok-msg {
+    color: green;
+}
+
+.query-container {
+    padding: 40px;
+}
+
+.query-container input {
+    border: solid 1px #aaa;
+    margin: 10px;
+    width: 300px;
+}
+
+.query-container button {
+}

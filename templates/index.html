@@ -4,24 +4,37 @@
     <meta charset="utf-8">
     <meta name="description" content="Shortly the URL shortener!">
 
-    <title>Shortly</title>
+    <title>State Query</title>
 
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/pure.min.css') }}"/>
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/style.css') }}"/>
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/jquery-ui.min.css') }}"/>
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/jquery-ui-timepicker-addon.min.css') }}"/>
     <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Raleway:200"/>
 
     <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery-ui.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery-ui-timepicker-addon.min.js') }}"></script>
 
 
     <script type="text/javascript" language="javascript">
        $(document).ready(function() {
+          $('.query-container').hide();
 
-          $('x').click(function(event){
+          var getKeys = function() {
+              $.ajax({
+                      url: 'keys',
+                      success: function(json) {
+                          var $el = $(".query-container select");
+                          $el.empty();
+                          $.each(json['result'], function(value, key) {
+                              $el.append($("<option></option>")
+                                      .attr("value", key).text(key));
+                          });
+                      }
+              });
+          };
 
-              if ($('#short-url a').length == 0) {
-                  $('#short-url').prepend('<a></a>'); // dummy link
-              }
-          });
           $("form button").click(function () {
               files = $('input[type=file]')[0].files
               if (files.length == 1 && files[0].type == "text/csv") {
@@ -34,7 +47,15 @@
                           processData: false,
                           contentType: false,
                           success: function(response) {
-                              console.log(response);
+                              if (response['result'] == 'OK') {
+                                  $('.load-msg').prepend(
+                                      '<span class="ok-msg">CSV file loaded! Ready to query.</span>');
+                                  getKeys(); 
+                                  $('.query-container').show();
+                              } else if (response['result'] == 'Error') {
+                                  $('.load-msg').prepend(
+                                      '<span class="error-msg">' + response['msg'] + '</span>');
+                              }
                           },
                           error: function(error) {
                               console.log(error);
@@ -42,12 +63,25 @@
                   });
               }
           });
-          $(document).keypress(function(e) {
-              if(e.which == 13) {
-                  e.preventDefault();
-                  $('form button').click();
-              }
-          });
+
+
+          $('#time-picker')
+             .datetimepicker({
+                  timeFormat: 'HH:mm:ss TT z',
+                  dateFormat: 'MM d, yy',
+                  showHour: false,
+                  showMinute: false,
+                  showSecond: false,
+                  timeInput: true
+          }).change(function() {
+                  var dateString = $("#time-picker").datepicker("getDate");
+                  if(dateString != null) {
+                      var timestamp = dateString.getTime() / 1000; 
+                      $('#timestamp').val(timestamp); 
+                      console.log(timestamp);
+                  }
+          }).datepicker("setDate", new Date());  
+;
        });
     </script>
 </head>
@@ -59,16 +93,27 @@
         <h1><a href="/">State Query</a></h1>
         <h2>Upload a CSV file and query object state</h2>
                   
-        <form class="pure-form" enctype="multipart/form-data">
-            <fieldset>
+        <div class="upload-container">
+            <form class="pure-form" enctype="multipart/form-data">
                 <div class="btn btn-primary">
                     <input name="file" type="file"/>
                     <button type="button" class="upload-button pure-button pure-button-primary">Upload</button>
                 </div>
-            </fieldset>
-        </form>
-
+            </form>
         </div>
+
+        <div class="load-msg">
+        </div>
+
+        <div class="query-container">
+            <form class="pure-form">
+                <select></select>
+                <input type="text" id="time-picker" />
+                <input type="hidden" id="timestamp" />
+                <button type="button" class="pure-button pure-button-primary">Query</button>
+            </form>
+        </div>
+
     </div>
 
 </div>
