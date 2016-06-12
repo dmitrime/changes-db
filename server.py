@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import time
 from flask import Flask, request, render_template, jsonify
 from model import ChangesDB
 
@@ -17,16 +18,22 @@ def submit():
 @app.route('/keys')
 def keys():
     if db is not None:
-        return jsonify({'result': db.keys().tolist()})
+        return jsonify({'result': db.keys()})
     else:
         return jsonify({'result': 'Error', 'msg': 'CSV file not loaded'})
 
-@app.route('/query')
+@app.route('/query', methods=['POST'])
 def query():
     if db is not None:
-        objType = request.values.get('objType')
-        objId = request.values.get('objId')
-        objTime = request.values.get('objTime')
+        objType = None
+        objId = None
+        objTime = int(time.time())
+        try:
+            objType = request.values.get('objType')
+            objTime = int(request.values.get('objTime'))
+            objId = int(request.values.get('objId'))
+        except:
+            pass
         if objType is None or objTime is None:
             return jsonify({'result': 'Error', 'msg': 'Object type and object time required'})
         else:
