@@ -75,12 +75,13 @@
                           processData: false,
                           contentType: false,
                           success: function(response) {
+                              $('#display-table').empty();
                               if (response['result'] == 'OK') {
                                   getKeys(); 
-                                  $('#display-table').empty();
                                   $('.query-container').show();
                                   reportMsg('CSV file loaded! Ready to query.', 'ok-msg');
                               } else if (response['result'] == 'Error') {
+                                  $('.query-container').hide();
                                   reportMsg(response['msg'], 'error-msg');
                               }
                           },
