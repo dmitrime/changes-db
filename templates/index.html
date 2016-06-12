@@ -10,16 +10,19 @@
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/style.css') }}"/>
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/jquery-ui.min.css') }}"/>
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/jquery-ui-timepicker-addon.min.css') }}"/>
-    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Raleway:200"/>
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/prettify.css') }}"/>
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/mrjsontable.css') }}"/>
+    <!--<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Raleway:200"/>-->
 
     <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/jquery-ui.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/jquery-ui-timepicker-addon.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/prettify.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/mrjsontable.min.js') }}"></script>
 
 
     <script type="text/javascript" language="javascript">
        $(document).ready(function() {
-          $('.query-container').hide();
 
           var getKeys = function() {
               $.ajax({
@@ -35,7 +38,12 @@
               });
           };
 
-          $("form button").click(function () {
+          var reportMsg = function(msg, cls) {
+              $('#load-msg').empty();
+              $('#load-msg').prepend('<span class="' + cls + '">' + msg + '</span>');
+          }
+
+          $("#upload-form button").click(function () {
               files = $('input[type=file]')[0].files
               if (files.length == 1 && files[0].type == "text/csv") {
                   var formData = new FormData();
@@ -48,13 +56,12 @@
                           contentType: false,
                           success: function(response) {
                               if (response['result'] == 'OK') {
-                                  $('.load-msg').prepend(
-                                      '<span class="ok-msg">CSV file loaded! Ready to query.</span>');
                                   getKeys(); 
+                                  $('#display-table').empty();
                                   $('.query-container').show();
+                                  reportMsg('CSV file loaded! Ready to query.', 'ok-msg');
                               } else if (response['result'] == 'Error') {
-                                  $('.load-msg').prepend(
-                                      '<span class="error-msg">' + response['msg'] + '</span>');
+                                  reportMsg(response['msg'], 'error-msg');
                               }
                           },
                           error: function(error) {
@@ -64,6 +71,45 @@
               }
           });
 
+          var makeTable = function(json) {
+              $('#display-table').empty();
+              $('#display-table').mrjsontable({
+                columns: [
+                        { heading: "Type", data: "type", type: "string" },
+                        { heading: "ID", data: "id", type: "int" },
+                        { heading: "Time", data: "time", type: "datetime" },
+                        { heading: "Properties", data: "props" }
+                    ],
+                data: json
+              });
+          }
+
+          $("#query-form button").click(function () {
+              $.ajax({
+                      url: '/query',
+                      data: $('#query-form').serialize(),
+                      type: 'POST',
+                      success: function(response) {
+                          if (response['result'] != 'Error') {
+                              data = []
+                              $.each(response['result'], function(value, key) {
+                                  var el = {"props": JSON.stringify(key['props'], null, 2),
+                                            "type": key["type"],
+                                            "time": key["time"],
+                                            "id": key["id"]};
+                                  data.push(el);
+                              });
+                              makeTable(data);
+                          } else if (response['result'] == 'Error') {
+                              reportMsg(response['msg'], 'error-msg');
+                          }
+                      },
+                      error: function(error) {
+                          console.log(error);
+                      }
+              });
+
+          });
 
           $('#time-picker')
              .datetimepicker({
@@ -78,9 +124,11 @@
                   if(dateString != null) {
                       var timestamp = dateString.getTime() / 1000; 
                       $('#timestamp').val(timestamp); 
-                      console.log(timestamp);
                   }
           }).datepicker("setDate", new Date());  
+
+          $('.query-container').hide();
+
 ;
        });
     </script>
@@ -94,7 +142,7 @@
         <h2>Upload a CSV file and query object state</h2>
                   
         <div class="upload-container">
-            <form class="pure-form" enctype="multipart/form-data">
+            <form id="upload-form" class="pure-form" enctype="multipart/form-data">
                 <div class="btn btn-primary">
                     <input name="file" type="file"/>
                     <button type="button" class="upload-button pure-button pure-button-primary">Upload</button>
@@ -102,17 +150,19 @@
             </form>
         </div>
 
-        <div class="load-msg">
-        </div>
+        <div id="load-msg"></div>
 
         <div class="query-container">
-            <form class="pure-form">
-                <select></select>
+            <form id="query-form" class="pure-form">
+                <select name="objType"></select>
+                <input name="objId" type="number" step="1" id="id-picker"/>
                 <input type="text" id="time-picker" />
-                <input type="hidden" id="timestamp" />
+                <input name="objTime" type="hidden" id="timestamp" />
                 <button type="button" class="pure-button pure-button-primary">Query</button>
             </form>
         </div>
+
+        <div id="display-table"></div>
 
     </div>
 

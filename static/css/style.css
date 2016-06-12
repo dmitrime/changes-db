@@ -71,10 +71,16 @@ dd {
     padding: 40px;
 }
 
-.query-container input {
+.query-container #time-picker {
     border: solid 1px #aaa;
     margin: 10px;
     width: 300px;
+}
+
+.query-container #id-picker {
+    border: solid 1px #aaa;
+    margin-left: 10px;
+    width: 90px;
 }
 
 .query-container button {
