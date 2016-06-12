@@ -10,15 +10,35 @@
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/style.css') }}"/>
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/jquery-ui.min.css') }}"/>
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/jquery-ui-timepicker-addon.min.css') }}"/>
-    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/prettify.css') }}"/>
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/mrjsontable.css') }}"/>
     <!--<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Raleway:200"/>-->
 
     <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/jquery-ui.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/jquery-ui-timepicker-addon.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/prettify.js') }}"></script>
     <script src="{{ url_for('static', filename='js/mrjsontable.min.js') }}"></script>
+
+    <script type="text/javascript" language="javascript">
+        function syntaxHighlight(json) {
+            json = json.replace(/{/g, '').replace(/}/g, '').trim();
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                var cls = 'number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'key';
+                    } else {
+                        cls = 'string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+        });
+    }
+    </script>
 
 
     <script type="text/javascript" language="javascript">
@@ -74,12 +94,10 @@
           var makeTable = function(json) {
               $('#display-table').empty();
               $('#display-table').mrjsontable({
-                columns: [
-                        { heading: "Type", data: "type", type: "string" },
-                        { heading: "ID", data: "id", type: "int" },
-                        { heading: "Time", data: "time", type: "datetime" },
-                        { heading: "Properties", data: "props" }
-                    ],
+                columns: [{ heading: "Type", data: "type", type: "string"},
+                          { heading: "ID", data: "id", type: "int"},
+                          { heading: "Time", data: "time", type: "datetime"},
+                          { heading: "Properties", data: "props", type: "string"}],
                 data: json
               });
           }
@@ -104,6 +122,10 @@
                                       data.push(el);
                                   });
                                   makeTable(data);
+                                  $.each($.find('tbody td[data-i=3]'), function() {
+                                      var str = $(this).text();
+                                      $(this).html(syntaxHighlight(str)).wrapInner('<pre>');
+                                  });
                               }
                           } else if (response['result'] == 'Error') {
                               reportMsg(response['msg'], 'error-msg');
@@ -167,7 +189,7 @@
             </form>
         </div>
 
-        <div id="display-table"></div>
+<div id="display-table"></div>
 
     </div>
 
