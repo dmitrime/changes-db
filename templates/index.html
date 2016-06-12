@@ -89,6 +89,8 @@
                               console.log(error);
                           }
                   });
+              } else if (files[0].type != "text/csv") {
+                  reportMsg("Only CSV files allowed", "error-msg");
               }
           });
 
