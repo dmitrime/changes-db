@@ -12,7 +12,11 @@ db = None
 def submit():
     global db
     f = request.files['file']
-    db = ChangesDB(f.filename)
+    try:
+        db = ChangesDB(f.filename)
+    except Exception as e:
+        return jsonify({'result': 'Error', 'msg': e.message})
+
     return jsonify({'result': 'OK'})
 
 @app.route('/keys')
