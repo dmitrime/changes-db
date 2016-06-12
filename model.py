@@ -85,17 +85,25 @@ class ChangesDB:
         # get the latest state
         if objId is not None:
             items = items.tail(1)
-            res = {objId: items['changes'].iloc[0]}
+            res = [{"id": objId,
+                    "props": items['changes'].iloc[0],
+                    "type": items['type'].iloc[0],
+                    "time": items.index[0].to_datetime()}]
         else:
             # get the latest state for all unique ids
-            res = dict()
+            res, ids = list(), set()
+            print type(items.index)
             for idx, row in items.iloc[::-1].iterrows():
-                if row['id'] not in res:
-                    res[row['id']] = row['changes']
+                if row['id'] not in ids:
+                    ids.add(row['id'])
+                    res.append({"id": row['id'],
+                                "props": row['changes'],
+                                "type": row['type'],
+                                "time": idx.to_datetime()})
         return res
 
     def keys(self):
-        return self.data.type.unique()
+        return sorted(self.data['type'].unique())
 
 if __name__ == '__main__':
     c = ChangesDB('sample.csv')
