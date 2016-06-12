@@ -43,7 +43,7 @@ class ChangesDB:
         except pd.parser.CParserError:
             raise Exception('Failed to load CSV file, check if CSV file is valid!')
         except ValueError:
-            raise Exception('Failed to load CSV file, check if CSV file dimentions!')
+            raise Exception('Failed to load CSV file, check CSV file dimentions!')
 
         if len(data.keys()) != len(ChangesDB.Columns):
             raise Exception('Unexpected number of dimentions!')
