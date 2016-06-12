@@ -92,14 +92,19 @@
                       success: function(response) {
                           if (response['result'] != 'Error') {
                               data = []
-                              $.each(response['result'], function(value, key) {
-                                  var el = {"props": JSON.stringify(key['props'], null, 2),
-                                            "type": key["type"],
-                                            "time": key["time"],
-                                            "id": key["id"]};
-                                  data.push(el);
-                              });
-                              makeTable(data);
+                              if (response['result'] == null || response['result'].length == 0) {
+                                  reportMsg("Query returned no results", "");
+                                  makeTable([]);
+                              } else {
+                                  $.each(response['result'], function(value, key) {
+                                      var el = {"props": JSON.stringify(key['props'], null, 2),
+                                                "type": key["type"],
+                                                "time": key["time"],
+                                                "id": key["id"]};
+                                      data.push(el);
+                                  });
+                                  makeTable(data);
+                              }
                           } else if (response['result'] == 'Error') {
                               reportMsg(response['msg'], 'error-msg');
                           }
