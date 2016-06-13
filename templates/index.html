@@ -11,7 +11,7 @@
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/jquery-ui.min.css') }}"/>
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/jquery-ui-timepicker-addon.min.css') }}"/>
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/mrjsontable.css') }}"/>
-    <!--<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Raleway:200"/>-->
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Raleway:200"/>
 
     <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/jquery-ui.min.js') }}"></script>
@@ -79,7 +79,7 @@
                               if (response['result'] == 'OK') {
                                   getKeys(); 
                                   $('.query-container').show();
-                                  reportMsg('CSV file loaded! Ready to query.', 'ok-msg');
+                                  reportMsg('CSV file loaded', 'ok-msg');
                               } else if (response['result'] == 'Error') {
                                   $('.query-container').hide();
                                   reportMsg(response['msg'], 'error-msg');
@@ -183,6 +183,7 @@
         <div id="load-msg"></div>
 
         <div class="query-container">
+            Select object type, object ID (optional) and date.
             <form id="query-form" class="pure-form">
                 <select name="objType"></select>
                 <input name="objId" type="number" step="1" id="id-picker"/>
@@ -192,7 +193,7 @@
             </form>
         </div>
 
-<div id="display-table"></div>
+        <div id="display-table"></div>
 
     </div>
 
