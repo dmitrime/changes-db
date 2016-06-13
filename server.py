@@ -5,7 +5,7 @@ from flask import Flask, request, render_template, jsonify
 from model import ChangesDB
 
 app = Flask(__name__)
-debug = True
+debug = False
 db = None
 
 @app.route('/submit', methods=['POST'])
