@@ -3,25 +3,6 @@ import pandas as pd
 import json
 
 
-class ChangesObj:
-
-    def __init__(self, row):
-        self.objTime = row.index
-        self.objType = row['type']
-        self.objId = row['id']
-        self.objProps = self.loadProps(row['changes'])
-
-    def loadProps(self, props):
-        try:
-            return json.loads(props)
-        except:
-            raise Exception("Failed to load object properties")
-
-    def update(self, time, changes):
-        self.objTime = time
-        self.objProps.update(self.loadProps(changes))
-
-
 class ChangesDB:
     Columns = ['id', 'type', 'time', 'changes']
     Sep = '|'
@@ -60,13 +41,19 @@ class ChangesDB:
         for idx, row in data.iterrows():
             key = row['type'], row['id']
             if key in objects:
-                objects[key].update(idx, row['changes'])
+                objects[key].update(self._loadProps(row['changes']))
             else:
-                objects[key] = ChangesObj(row)
+                objects[key] = self._loadProps(row['changes'])
             # update the cell of the dataframe with the changes
-            data.set_value(idx, 'changes', objects[key].objProps.copy())
+            data.set_value(idx, 'changes', objects[key].copy())
 
         return data
+
+    def _loadProps(self, props):
+        try:
+            return json.loads(props)
+        except:
+            raise Exception("Failed to load object properties")
 
     def query(self, objType, objId, objTime):
         if objTime is None or objType is None:
