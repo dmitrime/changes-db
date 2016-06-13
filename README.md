@@ -3,6 +3,8 @@ Changes DB
 
 A [pandas](http://pandas.pydata.org) powered object state explorer with a web front-end.
 
+![Screenshot](example.png "Screenshot")
+
 
 Setup
 ====
