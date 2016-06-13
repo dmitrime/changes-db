@@ -4,6 +4,8 @@ import json
 
 
 class ChangesDB:
+    ''' Load the CVS, make a pandas dataframe and use it for querying '''
+
     Columns = ['id', 'type', 'time', 'changes']
     Sep = '|'
 
@@ -11,6 +13,7 @@ class ChangesDB:
         self.data = self.load(filename)
 
     def load(self, filename):
+        ''' Load the CSV file and return pandas dataframe object '''
         try:
             data = pd.read_csv(
                 filename,
@@ -50,12 +53,14 @@ class ChangesDB:
         return data
 
     def _loadProps(self, props):
+        ''' Load JSON properties '''
         try:
             return json.loads(props)
         except:
             raise Exception("Failed to load object properties")
 
     def query(self, objType, objId, objTime):
+        ''' Query the pandas dataframe given the type, id (optional) and time '''
         if objTime is None or objType is None:
             return None
 
@@ -89,6 +94,7 @@ class ChangesDB:
         return res
 
     def keys(self):
+        ''' Return all unique object types in sorted order '''
         return sorted(self.data['type'].unique())
 
 if __name__ == '__main__':
