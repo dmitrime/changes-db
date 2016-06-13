@@ -7,7 +7,7 @@ A [pandas](http://pandas.pydata.org) powered object state explorer with a web fr
 
 
 Setup
-====
+----
 First install the necessary python packages:
 
         $ pip install -r requirements.txt
@@ -20,7 +20,7 @@ Then go to http://0.0.0.0:8080, upload a valid CSV file and start querying!
 
 
 CSV format
-====
+----
 
 Here is an example of a valid CSV file:
 
@@ -37,7 +37,7 @@ The fourth column is the object state, in JSON format.
 
 
 Generating CSV
-====
+----
 
 The script `csv_generator.py` can be used to generate CSV files with variable number of object types and IDs.
 Example:
@@ -50,7 +50,7 @@ All timestamps for each entry will be unique.
 
 
 Tests
-====
+----
 
 To run the tests, execute the following from the root directory:
 
