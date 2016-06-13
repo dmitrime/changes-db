@@ -92,7 +92,6 @@ class ChangesDB:
         else:
             # get the latest state for all unique ids
             res, ids = list(), set()
-            print type(items.index)
             for idx, row in items.iloc[::-1].iterrows():
                 if row['id'] not in ids:
                     ids.add(row['id'])
@@ -108,4 +107,4 @@ class ChangesDB:
 if __name__ == '__main__':
     c = ChangesDB('sample.csv')
     #print c.query('ObjectA', 1, 467765765)
-    print c.keys()
+    #print c.keys()
