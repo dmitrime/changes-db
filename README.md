@@ -34,6 +34,19 @@ The third column is the object's modification time, a UNIX timestamp.
 The fourth column is the object state, in JSON format.
 
 
+Generating CSV
+====
+
+The script `csv_generator.py` can be used to generate CSV files with variable number of object types and IDs.
+Example:
+
+        $ python csv_generator.py 4 3 2 > sample.csv
+
+This would generate objects of 3 different types, with 2 different IDs each, for 4 rounds.
+This means each unique object's properties will be changed 4 times.
+All timestamps for each entry will be unique.
+
+
 Tests
 ====
 
